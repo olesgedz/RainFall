@@ -1,0 +1,25 @@
+Список файлов покажет нам исполняемый файл 'level0'
+
+#level0@RainFall:~$ ls -l
+#total 732
+#	-rwsr-x---+ 1 level1 users 747441 Mar  6  2016 level0
+#3level0@RainFall:~$ ./level0
+#Segmentation fault (core dumped)
+#level0@RainFall:~$ ./level0 a
+#No !
+#level0@RainFall:~$
+
+Программа  ломается без параметров и выведет "Нет!" с параметром.
+После анализа программы с помощью gdb мы можем найти только main().
+В файле в папке Resources есть подробная информация об анализе
+Вызывается функция "atoi". Затем двоичный файл сравнивает первый аргумент с числом 423.
+С 423 в качестве первого аргумента, программа вызывает setuid, getuid и использует execve для запуска нового процесса /bin/sh.
+
+level0@RainFall:~$ ./level0 423
+$ pwd
+/home/user/level0
+$ cat /home/user/level1/.pass
+1fe8a524fa4bec01ca4ea2a869af2a02260d4a7d5fe7e7c24d8617e6dca12d3a
+$ exit
+level0@RainFall:~$ su level1
+

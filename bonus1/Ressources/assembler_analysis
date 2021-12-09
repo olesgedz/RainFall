@@ -1,0 +1,124 @@
+------ФУНКЦИИ В БИНАРНОМ ФАЙЛЕ------
+
+(gdb) info functions
+All defined functions:
+
+Non-debugging symbols:
+0x080482d4  _init
+0x08048320  memcpy@plt
+0x08048330  __gmon_start__@plt
+0x08048340  __libc_start_main@plt
+0x08048350  execl@plt
+0x08048360  atoi@plt
+0x08048370  _start
+0x080483a0  __do_global_dtors_aux
+0x08048400  frame_dummy
+0x08048424  main
+0x080484b0  __libc_csu_init
+0x08048520  __libc_csu_fini
+0x08048522  __i686.get_pc_thunk.bx
+0x08048530  __do_global_ctors_aux
+0x0804855c  _fini
+
+------MAIN-------
+
+(gdb) set disassembly-flavor intel
+(gdb) disass main
+Dump of assembler code for function main:
+   0x08048424 <+0>:     push   ebp
+   0x08048425 <+1>:     mov    ebp,esp
+   0x08048427 <+3>:     and    esp,0xfffffff0
+   0x0804842a <+6>:     sub    esp,0x40
+   0x0804842d <+9>:     mov    eax,DWORD PTR [ebp+0xc]
+   0x08048430 <+12>:    add    eax,0x4
+   0x08048433 <+15>:    mov    eax,DWORD PTR [eax]
+   0x08048435 <+17>:    mov    DWORD PTR [esp],eax
+   0x08048438 <+20>:    call   0x8048360 <atoi@plt>
+   0x0804843d <+25>:    mov    DWORD PTR [esp+0x3c],eax
+   0x08048441 <+29>:    cmp    DWORD PTR [esp+0x3c],0x9
+   0x08048446 <+34>:    jle    0x804844f <main+43>
+   0x08048448 <+36>:    mov    eax,0x1
+   0x0804844d <+41>:    jmp    0x80484a3 <main+127>
+   0x0804844f <+43>:    mov    eax,DWORD PTR [esp+0x3c]
+   0x08048453 <+47>:    lea    ecx,[eax*4+0x0]
+   0x0804845a <+54>:    mov    eax,DWORD PTR [ebp+0xc]
+   0x0804845d <+57>:    add    eax,0x8
+   0x08048460 <+60>:    mov    eax,DWORD PTR [eax]
+   0x08048462 <+62>:    mov    edx,eax
+   0x08048464 <+64>:    lea    eax,[esp+0x14]
+   0x08048468 <+68>:    mov    DWORD PTR [esp+0x8],ecx
+   0x0804846c <+72>:    mov    DWORD PTR [esp+0x4],edx
+   0x08048470 <+76>:    mov    DWORD PTR [esp],eax
+   0x08048473 <+79>:    call   0x8048320 <memcpy@plt>
+   0x08048478 <+84>:    cmp    DWORD PTR [esp+0x3c],0x574f4c46
+   0x08048480 <+92>:    jne    0x804849e <main+122>
+   0x08048482 <+94>:    mov    DWORD PTR [esp+0x8],0x0
+   0x0804848a <+102>:   mov    DWORD PTR [esp+0x4],0x8048580
+   0x08048492 <+110>:   mov    DWORD PTR [esp],0x8048583
+   0x08048499 <+117>:   call   0x8048350 <execl@plt>
+   0x0804849e <+122>:   mov    eax,0x0
+   0x080484a3 <+127>:   leave
+   0x080484a4 <+128>:   ret
+End of assembler dump.
+
+------ОБЪЯСНЕНИЕ-------
+
+   0x08048424 <+0>:     push   ebp
+   0x08048425 <+1>:     mov    ebp,esp
+   0x08048427 <+3>:     and    esp,0xfffffff0
+   0x0804842a <+6>:     sub    esp,0x40
+
+<+<+0>: Пуш ebp, чтобы сохранить начало кадра стека предыдущей функции.
+<+1>: Сохраняет содержимое ESP (указатель стека), в котором содержится адрес вершины стека, в EBP.
+<+3>: Выравнивание стека по 16 байтам не требуется, поскольку нет инструкций SIMD.
+<+6>: 64 байта выделяются основной функции для ее локальных переменных.
+
+   0x0804842d <+9>:     mov    eax,DWORD PTR [ebp+0xc]
+   0x08048430 <+12>:    add    eax,0x4
+   0x08048433 <+15>:    mov    eax,DWORD PTR [eax]
+   0x08048435 <+17>:    mov    DWORD PTR [esp],eax
+   0x08048438 <+20>:    call   0x8048360 <atoi@plt>
+   0x0804843d <+25>:    mov    DWORD PTR [esp+0x3c],eax
+
+<+9> - <+15> : Храните непосредственно значение argv[1] в eax, поэтому eax теперь является указателем.
+<+17> - <+25> : Вызов atoi() в argv[1], затем сохраните возврат функции в esp+3c.
+
+   0x08048441 <+29>:    cmp    DWORD PTR [esp+0x3c],0x9
+   0x08048446 <+34>:    jle    0x804844f <main+43>
+   0x08048448 <+36>:    mov    eax,0x1
+   0x0804844d <+41>:    jmp    0x80484a3 <main+127>
+
+<+29> - <+41> : Если возврат atoi() меньше или равен 0x9, перейдите к main+43 (мы продолжаем), в противном случае установите eax равным 1 и перейдите к main+127 (оставьте, затем ret).
+
+   0x0804844f <+43>:    mov    eax,DWORD PTR [esp+0x3c]
+   0x08048453 <+47>:    lea    ecx,[eax*4+0x0]
+   0x0804845a <+54>:    mov    eax,DWORD PTR [ebp+0xc]
+   0x0804845d <+57>:    add    eax,0x8
+   0x08048460 <+60>:    mov    eax,DWORD PTR [eax]
+   0x08048462 <+62>:    mov    edx,eax
+   0x08048464 <+64>:    lea    eax,[esp+0x14]
+   0x08048468 <+68>:    mov    DWORD PTR [esp+0x8],ecx
+   0x0804846c <+72>:    mov    DWORD PTR [esp+0x4],edx
+   0x08048470 <+76>:    mov    DWORD PTR [esp],eax
+   0x08048473 <+79>:    call   0x8048320 <memcpy@plt>
+
+<+43> - <+47> : Умножьте результат atoi() и сохраните его в ecx.
+<+54> - <+62> : Храните непосредственно значение argv[2] в eax, затем в edx.
+<+64>: eax теперь указывает на esp+0x14.
+<+68> - <+79> : Вызов memcpy() со значениями по адресам esp, esp+4 и esp+8 в качестве аргументов (memcpy(str, argv[2], atoi(argv[1]) * 4)).
+
+   0x08048478 <+84>:    cmp    DWORD PTR [esp+0x3c],0x574f4c46
+   0x08048480 <+92>:    jne    0x804849e <main+122>
+   0x08048482 <+94>:    mov    DWORD PTR [esp+0x8],0x0
+   0x0804848a <+102>:   mov    DWORD PTR [esp+0x4],0x8048580
+   0x08048492 <+110>:   mov    DWORD PTR [esp],0x8048583
+   0x08048499 <+117>:   call   0x8048350 <execl@plt>
+   0x0804849e <+122>:   mov    eax,0x0
+   0x080484a3 <+127>:   leave
+   0x080484a4 <+128>:   ret
+
+<+84> - <+92> : Если значение возврата atoi() не равно 0x574f4c46, перейдите к main+122 (возврат (0)). В противном случае продолжайте.
+<+94> - <+117> : Вызов execl() со значениями по адресам esp, esp+4 и esp+8 в качестве аргументов (execl("/bin/sh", "sh", 0)).
+<+122> - <+128> : возврат 0
+
+
