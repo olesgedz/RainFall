@@ -1,0 +1,23 @@
+// Address range: 0x8048ec0 - 0x8048f87
+int main(int argc, char ** argv) {
+    // 0x8048ec0
+    if (atoi(*(int32_t *)(argc + 4)) != 423) {
+        // 0x8048f58
+        fwrite((int32_t)"No !\n", 1, 5, *(int32_t *)0x80ee170);
+    } else {
+        int32_t v1 = strdup("/bin/sh"); // bp-32, 0x8048eec
+        int32_t v2 = getegid(); // 0x8048ef8
+        int32_t v3 = geteuid(v2); // 0x8048f01
+        setresgid(v2, v2, v2);
+        setresuid(v3, v3, v3);
+        execv("/bin/sh", &v1);
+    }
+    // 0x8048f80
+    return 0;
+}
+
+// Address range: 0x8049710 - 0x8049733
+int32_t atoi(int32_t a1) {
+    // 0x8049710
+    return strtol(a1, 0, 10);
+}
