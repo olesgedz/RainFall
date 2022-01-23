@@ -1,0 +1,47 @@
+(gdb)  info frame
+Stack level 0, frame at 0xbffff710:
+ eip = 0x8048483 in main; saved eip 0xb7e454d3
+ Arglist at 0xbffff708, args:
+ Locals at 0xbffff708, Previous frame's sp is 0xbffff710
+ Saved registers:
+  ebp at 0xbffff708, eip at 0xbffff70c
+
+return address - eip at 0xbffff70c
+
+
+
+Dump of assembler code for function main:
+   0x08048480 <+0>:	push   %ebp
+   0x08048481 <+1>:	mov    %esp,%ebp
+   0x08048483 <+3>:	and    $0xfffffff0,%esp
+   0x08048486 <+6>:	sub    $0x50,%esp
+   0x08048489 <+9>:	lea    0x10(%esp),%eax
+   0x0804848d <+13>:	mov    %eax,(%esp)
+=> 0x08048490 <+16>:	call   0x8048340 <gets@plt>
+   0x08048495 <+21>:	leave
+   0x08048496 <+22>:	ret
+End of assembler dump.
+
+(gdb) info registers
+eax            0xbffff6c0	-1073744192
+ecx            0xbffff7a4	-1073743964
+edx            0xbffff734	-1073744076
+ebx            0xb7fd0ff4	-1208152076
+esp            0xbffff6b0	0xbffff6b0
+ebp            0xbffff708	0xbffff708
+esi            0x0	0
+edi            0x0	0
+eip            0x8048490	0x8048490 <main+16>
+eflags         0x200282	[ SF IF ID ]
+cs             0x73	115
+ss             0x7b	123
+ds             0x7b	123
+es             0x7b	123
+fs             0x0	0
+gs             0x33	51
+
+eax            0xbffff6c0	-1073744192
+
+0xbffff70c(RET) - 0xbffff6c0 (EAX) = 4C (76)
+
+

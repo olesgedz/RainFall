@@ -4,8 +4,17 @@
 // ------------------------ Functions -------------------------
 
 // Address range: 0x8048480 - 0x8048497
-int main(int argc, char ** argv) {
-    // 0x8048480
-    int32_t str; // bp-80, 0x8048480
-    return (int32_t)gets((char *)&str);
+#include <stdio.h>
+
+void run(void) {
+	printf("Good... Wait what?\n");
+	system("/bin/sh");
+	return;
+}
+
+int main(void) {
+    char str[64];
+
+    gets(str + 0x10);
+    return 0;
 }
