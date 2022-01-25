@@ -8,7 +8,7 @@ void	m()
 	printf(s____d, c, time());
 }
 
-int	main(int ac, char **av)
+int	main(int ac, char **argv)
 {
 	char	*pass = "/home/user/level8/.pass";
 	int	*save1;
@@ -22,8 +22,8 @@ int	main(int ac, char **av)
 	save2[0] = 2;
 	save2[1] = malloc(8);
 	
-	strcpy(save1[1], av[1]);
-	strcpy(save2[1], av[2]);
+	strcpy(save1[1], argv[1]);
+	strcpy(save2[1], argv[2]);
 	fgets(c, 68, fopen(pass, 0x80486e9));
 	puts("~~");
 	return (0);

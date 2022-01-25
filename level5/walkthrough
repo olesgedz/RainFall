@@ -2,7 +2,7 @@ In this example we can see that function o() calls /bin/sh however it is not par
 We also notice that function n() called by main uses printf and exit.
 
 Since RELRO (Relocation Read-Only) protection is off, we can use a format string attack to modify the Global Offset Table.
-By replacing the .got.plt relocation address of exit() to o(), the n() function will call o() instead of exit() and open a shell prompt for us.
+By replacing the relocation address of exit() to o(), the n() function will call o() instead of exit() and open a shell prompt for us.
 
 External function call -> PLT (Procedure Linkage Table) -> GOT (Global Offset Table).
 

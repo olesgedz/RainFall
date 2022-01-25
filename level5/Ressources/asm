@@ -50,3 +50,13 @@ Dump of assembler code for function n:
    0x080484f8 <+54>:    mov    DWORD PTR [esp],0x1
    0x080484ff <+61>:    call   0x80483d0 <exit@plt>
 End of assembler dump.
+
+Dump of assembler code for function o:
+   0x080484a4 <+0>:     push   ebp
+   0x080484a5 <+1>:     mov    ebp,esp
+   0x080484a7 <+3>:     sub    esp,0x18
+   0x080484aa <+6>:     mov    DWORD PTR [esp],0x80485f0
+   0x080484b1 <+13>:    call   0x80483b0 <system@plt>
+   0x080484b6 <+18>:    mov    DWORD PTR [esp],0x1
+   0x080484bd <+25>:    call   0x8048390 <_exit@plt>
+End of assembler dump.
