@@ -1,0 +1,4 @@
+There is only one thing to remember from the disassembled source code:
+It is necessary to fulfill the condition of the strcmp, that is to say to ensure that bufferOne and argv[1] are equal. bufferOne is populated with the contents of /home/user/end/.pass, and like other .pass files it can be assumed to be a random hex string.
+But there is a very simple way around this difficulty: by passing an empty string like argv[1], then bufferOne[0] will be equal to \0 (in other words, bufferOne will be an empty string). If both strings are empty, then the strcmp will succeed.
+Indeed, ./bonus3 "" allows to launch the shell. cat /home/user/end/.pass to get the latest flag.

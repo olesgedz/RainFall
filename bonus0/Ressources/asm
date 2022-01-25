@@ -1,0 +1,44 @@
+
+(gdb) info functions
+All defined functions:
+
+Non-debugging symbols:
+0x08048334  _init
+0x08048380  read@plt
+0x08048390  strcat@plt
+0x080483a0  strcpy@plt
+0x080483b0  puts@plt
+0x080483c0  __gmon_start__@plt
+0x080483d0  strchr@plt
+0x080483e0  __libc_start_main@plt
+0x080483f0  strncpy@plt
+0x08048400  _start
+0x08048430  __do_global_dtors_aux
+0x08048490  frame_dummy
+0x080484b4  p
+0x0804851e  pp
+0x080485a4  main
+0x080485d0  __libc_csu_init
+0x08048640  __libc_csu_fini
+0x08048642  __i686.get_pc_thunk.bx
+0x08048650  __do_global_ctors_aux
+0x0804867c  _fini
+
+
+(gdb) set disassembly-flavor intel
+(gdb) disass main
+Dump of assembler code for function main:
+   0x080485a4 <+0>:     push   ebp       
+   0x080485a5 <+1>:     mov    ebp,esp
+   0x080485a7 <+3>:     and    esp,0xfffffff0     
+   0x080485aa <+6>:     sub    esp,0x40
+   0x080485ad <+9>:     lea    eax,[esp+0x16]     
+   0x080485b1 <+13>:    mov    DWORD PTR [esp],eax
+   0x080485b4 <+16>:    call   0x804851e <pp>     
+   0x080485b9 <+21>:    lea    eax,[esp+0x16]     
+   0x080485bd <+25>:    mov    DWORD PTR [esp],eax
+   0x080485c0 <+28>:    call   0x80483b0 <puts@plt>
+   0x080485c5 <+33>:    mov    eax,0x0
+   0x080485ca <+38>:    leave
+   0x080485cb <+39>:    ret
+End of assembler dump.
