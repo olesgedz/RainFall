@@ -1,2 +1,4 @@
 The binary compares argv[1] with the number 423 at the address 0x08048ed9.
 By passing 423 as the firt argument, the program calls setuid, getuid and will start a new /bin/sh process.
+
+cat /home/user/level1/.pass

